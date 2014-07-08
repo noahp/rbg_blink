@@ -2,9 +2,8 @@
 #include "MKL26Z4.h"
 #include "systick.h"
 #include "delay.h"
-#include "ssd1306.h"
 
-void main_init_io(void)
+static void main_init_io(void)
 {
     // init ports
     // disable COP
@@ -21,26 +20,6 @@ void main_init_io(void)
 
     // set B0 DDR to output
     GPIOB_PDDR |= (1 << 0);
-}
-
-uint32_t encodeWS2812B(uint8_t c)
-{
-    uint8_t i;
-    uint32_t output = 0;
-
-    // encode 1 byte into 3.
-    for(i=0; i<8; i++){
-        if(c & 0x80){
-            output |= 0x6;
-        }
-        else{
-            output |= 0x4;
-        }
-        c <<= 1;
-        output <<= 3;
-    }
-
-    return output >> 3;
 }
 
 static void main_spi_send(uint8_t *pData, uint32_t len)
@@ -62,7 +41,7 @@ static void main_spi_send(uint8_t *pData, uint32_t len)
     SPI0_C2 |= SPI_C2_TXDMAE_MASK;
 }
 
-void main_init_spi(void)
+static void main_init_spi(void)
 {
     // init spi0
     // enable clocks for PORTC
@@ -113,34 +92,60 @@ void main_init_spi(void)
 
 }
 
-static uint8_t rbgData[9];
-static uint32_t rawData = 0xFF;
+typedef union _32by8_u {
+    uint32_t all;
+    uint8_t byte[4];
+}_32by8_t;
+
+//
+//  encodeWS2812B - encode 8 bits into 24 bits. pOut is 3x pIn length. len is
+//                  bytes.
+//
+static void encodeWS2812B(uint8_t *pIn, uint8_t *pOut, uint32_t len)
+{
+    uint8_t i,c;
+    uint32_t j;
+    _32by8_t output;
+
+    for(j=0; j<len; j++){
+        output.all = 0;
+        c = pIn[j];
+        // encode 1 byte into 3.
+        for(i=0; i<8; i++){
+            if(c & 0x80){
+                output.all |= (0x6 << 24);
+            }
+            else{
+                output.all |= (0x4 << 24);
+            }
+            c <<= 1;
+            output.all >>= 3;
+        }
+
+        pOut[3*j+0] = output.byte[2];
+        pOut[3*j+1] = output.byte[1];
+        pOut[3*j+2] = output.byte[0];
+    }
+}
+
+static uint8_t rgbData[9];
+static _32by8_t rawData = {.all = 0x000000FF};
 static uint8_t dataOff = 0;
 void main_send_lights(void)
 {
-    uint32_t datas;
-
     // send some data (turn on green?)
-    datas = encodeWS2812B((rawData >> 0) & 0xFF);
-    rbgData[2] = (datas >> 0) & 0xFF;
-    rbgData[1] = (datas >> 8) & 0xFF;
-    rbgData[0] = (datas >> 16) & 0xFF;
-    datas = encodeWS2812B((rawData >> 8) & 0xFF);
-    rbgData[5] = (datas >> 0) & 0xFF;
-    rbgData[4] = (datas >> 8) & 0xFF;
-    rbgData[3] = (datas >> 16) & 0xFF;
-    datas = encodeWS2812B((rawData >> 16) & 0xFF);
-    rbgData[8] = (datas >> 0) & 0xFF;
-    rbgData[7] = (datas >> 8) & 0xFF;
-    rbgData[6] = (datas >> 16) & 0xFF;
+    encodeWS2812B(rawData.byte, rgbData, 3);
 
     // increment
     dataOff = (dataOff + 1 >= 24)?(0):(dataOff + 1);
-    rawData = (0xFF << dataOff);
+    rawData.all = (0xFF << dataOff);
     // carry bits around
-    rawData |= 0xFF & (0xFF >> (dataOff - 16));
+    if(dataOff > 16){
+        rawData.all |= 0xFF & (0xFF >> (24 - dataOff));
+    }
+    //rawData.all = (rawData.all << 1) & 0x00FFFFFF;
 
-    main_spi_send(rbgData, 9);
+    main_spi_send(rgbData, 9);
 }
 
 static void main_led(void)
@@ -160,7 +165,7 @@ static void main_rgb(void)
     static uint32_t rgbTime = 0;
 
     // refresh every 100ms
-    if(systick_getMs() - rgbTime > 500){
+    if(systick_getMs() - rgbTime > 50){
         rgbTime = systick_getMs();
         main_send_lights();
     }

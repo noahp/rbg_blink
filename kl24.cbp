@@ -34,22 +34,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/delay.h" />
-		<Unit filename="src/font_5x8.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/font_5x8.h" />
 		<Unit filename="src/interrupts.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/interrupts.h" />
 		<Unit filename="src/main.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/noahs_face.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/noahs_face.h" />
-		<Unit filename="src/ssd1306.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/startup.c">
