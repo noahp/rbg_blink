@@ -92,10 +92,16 @@ static void main_init_spi(void)
 
 }
 
-typedef union _32by8_u {
+typedef union rgbData_u {
     uint32_t all;
     uint8_t byte[4];
-}_32by8_t;
+    struct {
+        uint8_t g;
+        uint8_t r;
+        uint8_t b;
+        uint8_t pad;
+    } color;
+}rgbData_t;
 
 //
 //  encodeWS2812B - encode 8 bits into 24 bits. pOut is 3x pIn length. len is
@@ -105,7 +111,7 @@ static void encodeWS2812B(uint8_t *pIn, uint8_t *pOut, uint32_t len)
 {
     uint8_t i,c;
     uint32_t j;
-    _32by8_t output;
+    rgbData_t output;
 
     for(j=0; j<len; j++){
         output.all = 0;
@@ -113,14 +119,16 @@ static void encodeWS2812B(uint8_t *pIn, uint8_t *pOut, uint32_t len)
         // encode 1 byte into 3.
         for(i=0; i<8; i++){
             if(c & 0x80){
-                output.all |= (0x6 << 24);
+                output.all |= (0x6);
             }
             else{
-                output.all |= (0x4 << 24);
+                output.all |= (0x4);
             }
             c <<= 1;
-            output.all >>= 3;
+            output.all <<= 3;
         }
+
+        output.all >>= 3;
 
         pOut[3*j+0] = output.byte[2];
         pOut[3*j+1] = output.byte[1];
@@ -128,35 +136,70 @@ static void encodeWS2812B(uint8_t *pIn, uint8_t *pOut, uint32_t len)
     }
 }
 
-static uint8_t rgbData[9];
-static _32by8_t rawData = {.all = 0x000000FF};
-static uint8_t dataOff = 0;
+static uint8_t rawData[9];
+static rgbData_t rgbData = {.color = {.g=0xFF, .r=0x00, .b=0x00}};
+static uint32_t dataOff = 0xFF;
 void main_send_lights(void)
 {
-    // send some data (turn on green?)
-    encodeWS2812B(rawData.byte, rgbData, 3);
+//    // increment
+//    dataOff = (dataOff + 1 >= 24)?(0):(dataOff + 1);
+//    rawData.all = (0xFF << dataOff);
+//    // carry bits around
+//    if(dataOff > 16){
+//        rawData.all |= 0xFF & (0xFF >> (24 - dataOff));
+//    }
 
-    // increment
-    dataOff = (dataOff + 1 >= 24)?(0):(dataOff + 1);
-    rawData.all = (0xFF << dataOff);
-    // carry bits around
-    if(dataOff > 16){
-        rawData.all |= 0xFF & (0xFF >> (24 - dataOff));
+    // set the rgb values
+    if(dataOff < 0xFF){
+        rgbData.color.b--;
+        rgbData.color.g++;
     }
-    //rawData.all = (rawData.all << 1) & 0x00FFFFFF;
+    else if (dataOff < 0xFF * 2){
+        // steady for 1 period
+        asm("nop");
+    }
+    else if(dataOff < 0xFF * 3){
+        rgbData.color.g--;
+        rgbData.color.r++;
+        if(rgbData.color.r > 0xFF /2){
+            asm("nop");
+        }
+    }
+    else if (dataOff < 0xFF * 4){
+        // steady for 1 period
+        asm("nop");
+    }
+    else if(dataOff < 0xFF * 5){
+        rgbData.color.r--;
+        rgbData.color.b++;
+    }
+    else if (dataOff < 0xFF * 6){
+        // steady for 1 period
+        asm("nop");
+    }
 
-    main_spi_send(rgbData, 9);
+    dataOff = (dataOff + 1) % (0xFF * 6);
+
+    // encode the sequence
+    encodeWS2812B(rgbData.byte, rawData, 3);
+
+    // send the data
+    main_spi_send(rawData, 9);
 }
 
 static void main_led(void)
 {
     static uint32_t blinkTime = 0;
+    static uint8_t blinkCount = 0;
 
     // blink every 250ms
-    if(systick_getMs() - blinkTime > 250){
-        blinkTime = systick_getMs();
-        // toggle
-        GPIOB_PTOR = (1 << 0);
+    if(blinkCount < 10){
+        if(systick_getMs() - blinkTime > 250){
+            blinkTime = systick_getMs();
+            // toggle
+            GPIOB_PTOR = (1 << 0);
+            blinkCount++;
+        }
     }
 }
 
@@ -165,7 +208,7 @@ static void main_rgb(void)
     static uint32_t rgbTime = 0;
 
     // refresh every 100ms
-    if(systick_getMs() - rgbTime > 50){
+    if(systick_getMs() - rgbTime > 5){
         rgbTime = systick_getMs();
         main_send_lights();
     }

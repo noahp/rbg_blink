@@ -21,11 +21,14 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-mthumb" />
 			<Add option="-Wall" />
-			<Add option="-mthumb -mcpu=cortex-m0plus" />
+			<Add option="-mcpu=cortex-m0plus" />
+			<Add option="-fdata-sections" />
+			<Add option="-ffunction-sections" />
 		</Compiler>
 		<Linker>
-			<Add option="--specs=nano.specs -Wl,--gc-sections,-Map,kl24.map,-Tlink.ld" />
+			<Add option="-mthumb -mcpu=cortex-m0plus --specs=nano.specs -Wl,--gc-sections,-Map,kl24.map,-Tlink.ld" />
 		</Linker>
 		<Unit filename="Makefile" />
 		<Unit filename="link.ld" />
