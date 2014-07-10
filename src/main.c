@@ -2,6 +2,7 @@
 #include "MKL26Z4.h"
 #include "systick.h"
 #include "delay.h"
+#include <string.h> //memset
 
 static void main_init_io(void)
 {
@@ -26,10 +27,10 @@ static void main_spi_send(uint8_t *pData, uint32_t len)
 {
     // wait until dma busy flag is cleared
     while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
-    // pull spi mosi low (p27) for at least 50us
-    PORTC_PCR6 = PORT_PCR_MUX(1);
-    GPIOC_PCOR = (1 << 6);
-    delay_ms(1);
+    //// pull spi mosi low (p27) for at least 50us
+    //PORTC_PCR6 = PORT_PCR_MUX(1);
+    //GPIOC_PCOR = (1 << 6);
+    //delay_ms(1);
     // reset dma
     DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     // write to the dma
@@ -37,7 +38,7 @@ static void main_spi_send(uint8_t *pData, uint32_t len)
     DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
     // enable dma on the spi
     DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
-    PORTC_PCR6 = PORT_PCR_MUX(2);
+    //PORTC_PCR6 = PORT_PCR_MUX(2);
     SPI0_C2 |= SPI_C2_TXDMAE_MASK;
 }
 
@@ -136,19 +137,11 @@ static void encodeWS2812B(uint8_t *pIn, uint8_t *pOut, uint32_t len)
     }
 }
 
-static uint8_t rawData[9];
+static uint8_t rawData[169];
 static rgbData_t rgbData = {.color = {.g=0xFF, .r=0x00, .b=0x00}};
 static uint32_t dataOff = 0xFF;
 void main_send_lights(void)
 {
-//    // increment
-//    dataOff = (dataOff + 1 >= 24)?(0):(dataOff + 1);
-//    rawData.all = (0xFF << dataOff);
-//    // carry bits around
-//    if(dataOff > 16){
-//        rawData.all |= 0xFF & (0xFF >> (24 - dataOff));
-//    }
-
     // set the rgb values
     if(dataOff < 0xFF){
         rgbData.color.b--;
@@ -181,10 +174,10 @@ void main_send_lights(void)
     dataOff = (dataOff + 1) % (0xFF * 6);
 
     // encode the sequence
-    encodeWS2812B(rgbData.byte, rawData, 3);
+    encodeWS2812B(rgbData.byte, &rawData[160], 3);
 
     // send the data
-    main_spi_send(rawData, 9);
+    main_spi_send(rawData, sizeof(rawData));
 }
 
 static void main_led(void)
@@ -218,6 +211,8 @@ int main(void) {
     // initialize the necessary
     main_init_io();
     main_init_spi();
+
+    memset(rawData, 0, sizeof(rawData));
 
     while(1){
         // led task
