@@ -11,8 +11,8 @@ enum usb_clock
 };
 
 /* Select Clock source */
-#define USB_CLOCK   MCGPLL0
-//#define USB_CLOCK   MCGFLL
+//#define USB_CLOCK   MCGPLL0
+#define USB_CLOCK   MCGFLL
 //#define USB_CLOCK   CLKIN
 
 void vfnInitUSBClock (uint8_t u8ClkOption);

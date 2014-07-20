@@ -7,6 +7,7 @@
 #include "interrupts.h"
 #include "startup.h"    // StartupInitClock
 #include "systick.h"    // systick_update
+#include "usb.h"        // USB_ISR
 
 #define     __I     volatile const          /*!< defines 'read only' permissions      */
 #define     __IO    volatile                  /*!< defines 'read / write' permissions   */
@@ -105,6 +106,11 @@ void SysTickIntHandler(void)
 {
     // update ms clock
     systick_update();
+}
+
+void USBOTGIntHandler(void)
+{
+    USB_ISR();
 }
 
 // DefaultIntHandler is used for unpopulated interrupts

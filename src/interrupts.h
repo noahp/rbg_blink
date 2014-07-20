@@ -88,7 +88,7 @@ void DefaultIntHandler(void);
 #define RTCAIntHandler DefaultIntHandler
 #define RTCSIntHandler DefaultIntHandler
 #define PITIntHandler DefaultIntHandler
-#define USBOTGIntHandler DefaultIntHandler
+//#define USBOTGIntHandler DefaultIntHandler
 #define DACIntHandler DefaultIntHandler
 #define TSIIntHandler DefaultIntHandler
 #define MCGIntHandler DefaultIntHandler
