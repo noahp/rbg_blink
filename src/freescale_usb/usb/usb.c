@@ -1,8 +1,7 @@
 #include"usb.h"
 #include "bsp_KL25.h"
 #include "usb_descriptor.h"
-
-#define PRINTF(...)
+#include "Settings.h"
 
 /* Arrays and global buffers */
 

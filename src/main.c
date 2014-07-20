@@ -45,6 +45,9 @@ int main(void) {
     while(1){
         // led task
         main_led();
+
+        // usb task
+        usb_main_mainfunction();
     }
 
     return 0;

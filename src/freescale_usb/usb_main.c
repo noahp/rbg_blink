@@ -10,8 +10,6 @@
 #include "usb_reg.h"
 #include "Settings.h"
 
-#define PRINTF(...)
-
 volatile uint8_t  gu8ISR_Flags=0;
 
 /* Extern Variables */
@@ -44,8 +42,8 @@ void usb_main_init (void)
 
 void usb_main_mainfunction(void)
 {
-  // USB CDC service routine
-  CDC_Engine();
+    // USB CDC service routine
+    CDC_Engine();
 
     // If data transfer arrives
     if(FLAG_CHK(EP_OUT,gu8USB_Flags))

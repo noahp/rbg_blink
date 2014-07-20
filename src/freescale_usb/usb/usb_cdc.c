@@ -8,8 +8,8 @@ uint8_t CDC_OUT_Data[CDC_BUFFER_SIZE];
 uint8_t enum_msg = TRUE;
 
 /* USB Variables & Flags */
-extern uint8_t gu8USB_Flags; 
-extern uint8_t gu8USB_State;              
+extern uint8_t gu8USB_Flags;
+extern uint8_t gu8USB_State;
 extern tUSB_Setup *Setup_Pkt;
 extern uint8_t gu8EP2_IN_ODD_Buffer[];
 extern uint8_t gu8EP3_OUT_ODD_Buffer[];
@@ -24,13 +24,13 @@ extern uint8_t gu8Interface;
 void CDC_Init(void)
 {
     u8CDCState=0;
-    
+
     /* USB Initialization */
     USB_Init();
-    
+
     /** Enable SOF ouput */
     PORTC_PCR7 |= PORT_PCR_MUX(3);
-    
+
     /* Line Coding Initialization */
     //LineCoding.DTERate=LWordSwap(9600);
     LineCoding.DTERate=(9600);
@@ -40,7 +40,7 @@ void CDC_Init(void)
 
     /* Initialize Data Buffers */
     Buffer_Init(CDC_OUT_Data,CDC_BUFFER_SIZE);
-    
+
 }
 
 
@@ -48,7 +48,7 @@ void CDC_Init(void)
 void CDC_Engine(void)
 {
     //uint16_t u8RecData;
-	
+
 	/** re-init CDC class if a VBUS HIGH event was detected */
 	if (FLAG_CHK(VBUS_HIGH_EVENT,gu8ISR_Flags))
 	{
@@ -68,13 +68,13 @@ void CDC_Engine(void)
             {
                 (void)u8CDCState;
             };
-            
+
             if (enum_msg)
             {
-               printf ("\nUSB Enumerated, check your COM ports ");
+               PRINTF ("\nUSB Enumerated, check your COM ports ");
                enum_msg = FALSE;
             }
-      
+
             u8CDCState=0;
             break;
 
@@ -83,15 +83,15 @@ void CDC_Engine(void)
             {
                 FLAG_CLR(EP0,gu8USB_Flags);
                 (void)EP_OUT_Transfer(EP0,(uint8_t*)&LineCoding);
-                EP_IN_Transfer(EP0,0,0);       
+                EP_IN_Transfer(EP0,0,0);
                 //vfnSCI1Init();
             }
             break;
 
         case SET_CONTROL_LINE_STATE:
-            EP_IN_Transfer(EP0,0,0);       
+            EP_IN_Transfer(EP0,0,0);
             break;
-       
+
     }
 
     /* Data stage */
@@ -112,9 +112,9 @@ void CDC_Engine(void)
 uint8_t CDC_InterfaceReq_Handler(void)
 {
     uint8_t u8State=uSETUP;
-    
+
     switch(Setup_Pkt->bRequest)
-    {        
+    {
         case GET_INTERFACE:
             EP_IN_Transfer(EP0,&gu8Interface,1);
             break;
@@ -154,5 +154,5 @@ uint32_t LWordSwap(uint32_t u32DataSwap)
     u32Temp+=(u32DataSwap & 0xFF0000)   >> 8;
     u32Temp+=(u32DataSwap & 0xFF00)     << 8;
     u32Temp+=(u32DataSwap & 0xFF)       << 24;
-    return(u32Temp);    
+    return(u32Temp);
 }
