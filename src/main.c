@@ -2,6 +2,7 @@
 #include "MKL26Z4.h"
 #include "systick.h"
 #include <string.h> //memset
+#include "usb_main.h"
 
 static void main_init_io(void)
 {
@@ -37,6 +38,9 @@ static void main_led(void)
 int main(void) {
     // initialize the necessary
     main_init_io();
+
+    // usb init
+    usb_main_init();
 
     while(1){
         // led task

@@ -22,7 +22,7 @@ int core_clk_khz;
 int periph_clk_khz;
 int pll_clk_khz;
 int uart0_clk_khz;
-uint32 uart0_clk_hz;
+uint32_t uart0_clk_hz;
 
 
 

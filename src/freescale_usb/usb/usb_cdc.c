@@ -3,20 +3,20 @@
 
 /* CDC Global Structures */
 CDC_Line_Coding LineCoding;
-uint8 u8CDCState=WAITING_FOR_ENUMERATION;
-uint8 CDC_OUT_Data[CDC_BUFFER_SIZE];
-uint8 enum_msg = TRUE;
+uint8_t u8CDCState=WAITING_FOR_ENUMERATION;
+uint8_t CDC_OUT_Data[CDC_BUFFER_SIZE];
+uint8_t enum_msg = TRUE;
 
 /* USB Variables & Flags */
-extern uint8 gu8USB_Flags; 
-extern uint8 gu8USB_State;              
+extern uint8_t gu8USB_Flags; 
+extern uint8_t gu8USB_State;              
 extern tUSB_Setup *Setup_Pkt;
-extern uint8 gu8EP2_IN_ODD_Buffer[];
-extern uint8 gu8EP3_OUT_ODD_Buffer[];
+extern uint8_t gu8EP2_IN_ODD_Buffer[];
+extern uint8_t gu8EP3_OUT_ODD_Buffer[];
 
 
 extern tBDT tBDTtable[];
-extern uint8 gu8Interface;
+extern uint8_t gu8Interface;
 
 
 
@@ -47,7 +47,7 @@ void CDC_Init(void)
 /**********************************************************/
 void CDC_Engine(void)
 {
-    //uint16 u8RecData;
+    //uint16_t u8RecData;
 	
 	/** re-init CDC class if a VBUS HIGH event was detected */
 	if (FLAG_CHK(VBUS_HIGH_EVENT,gu8ISR_Flags))
@@ -82,7 +82,7 @@ void CDC_Engine(void)
             if(FLAG_CHK(EP0,gu8USB_Flags))
             {
                 FLAG_CLR(EP0,gu8USB_Flags);
-                (void)EP_OUT_Transfer(EP0,(uint8*)&LineCoding);
+                (void)EP_OUT_Transfer(EP0,(uint8_t*)&LineCoding);
                 EP_IN_Transfer(EP0,0,0);       
                 //vfnSCI1Init();
             }
@@ -109,9 +109,9 @@ void CDC_Engine(void)
 }
 
 /**********************************************************/
-uint8 CDC_InterfaceReq_Handler(void)
+uint8_t CDC_InterfaceReq_Handler(void)
 {
-    uint8 u8State=uSETUP;
+    uint8_t u8State=uSETUP;
     
     switch(Setup_Pkt->bRequest)
     {        
@@ -120,7 +120,7 @@ uint8 CDC_InterfaceReq_Handler(void)
             break;
 
         case GET_LINE_CODING:
-            EP_IN_Transfer(EP0,(uint8*)&LineCoding,7);
+            EP_IN_Transfer(EP0,(uint8_t*)&LineCoding,7);
             break;
 
         case SET_LINE_CODING:
@@ -147,9 +147,9 @@ uint8 CDC_InterfaceReq_Handler(void)
 
 
 /**********************************************************/
-uint32 LWordSwap(uint32 u32DataSwap)
+uint32_t LWordSwap(uint32_t u32DataSwap)
 {
-    uint32 u32Temp;
+    uint32_t u32Temp;
     u32Temp= (u32DataSwap & 0xFF000000) >> 24;
     u32Temp+=(u32DataSwap & 0xFF0000)   >> 8;
     u32Temp+=(u32DataSwap & 0xFF00)     << 8;

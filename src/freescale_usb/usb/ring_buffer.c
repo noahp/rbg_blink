@@ -1,18 +1,18 @@
 #include "ring_buffer.h"
 
 /* Pointers */
-volatile uint8 *OUT_StartAddress;
-volatile uint8 *OUT_EndAddress;
-volatile uint8 *OUT_UsbPointer;
-volatile uint8 *OUT_SciPointer;
+volatile uint8_t *OUT_StartAddress;
+volatile uint8_t *OUT_EndAddress;
+volatile uint8_t *OUT_UsbPointer;
+volatile uint8_t *OUT_SciPointer;
 
 /* Variables */
-volatile uint8 gu8BufferMaxSize;
-volatile uint8 gu8BufferOverFlow;
+volatile uint8_t gu8BufferMaxSize;
+volatile uint8_t gu8BufferOverFlow;
 
 
 /********************************************************/
-void Buffer_Init(uint8* pu8BufferPointer ,uint8 u8MaxSize)
+void Buffer_Init(uint8_t* pu8BufferPointer ,uint8_t u8MaxSize)
 {
     /* Buffer Initialization */
     OUT_EndAddress = pu8BufferPointer + u8MaxSize - 1;
@@ -25,9 +25,9 @@ void Buffer_Init(uint8* pu8BufferPointer ,uint8 u8MaxSize)
 
 
 /********************************************************/
-uint8 Buffer_Request(uint8* pu8DataPointer ,uint16 u8RequestSize)
+uint8_t Buffer_Request(uint8_t* pu8DataPointer ,uint16_t u8RequestSize)
 {
-    uint8 u8FreeSpace;
+    uint8_t u8FreeSpace;
     
     // Check for OverFlow
     
@@ -37,7 +37,7 @@ uint8 Buffer_Request(uint8* pu8DataPointer ,uint16 u8RequestSize)
     
     // Calculate Free Space
     if(OUT_UsbPointer < OUT_SciPointer)
-        u8FreeSpace=(uint8)(OUT_SciPointer-OUT_UsbPointer);
+        u8FreeSpace=(uint8_t)(OUT_SciPointer-OUT_UsbPointer);
     
     else
         u8FreeSpace=gu8BufferMaxSize-(OUT_UsbPointer-OUT_SciPointer);

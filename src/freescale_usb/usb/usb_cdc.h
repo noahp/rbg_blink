@@ -6,10 +6,10 @@
 #include "usb.h"
 #include "ring_buffer.h"
 
-extern uint8 u8CDCState;
+extern uint8_t u8CDCState;
 
 /** Re-enumeration macros and flag*/
-extern volatile uint8  gu8ISR_Flags;
+extern volatile uint8_t  gu8ISR_Flags;
 #define VBUS_LOW_EVENT          0x10
 #define VBUS_HIGH_EVENT         0x01
 
@@ -43,25 +43,25 @@ extern volatile uint8  gu8ISR_Flags;
 /* TypeDefs */
 typedef struct
 {
-    uint32  DTERate;
-    uint8   CharFormat;
-    uint8   ParityType;
-    uint8   Databits;
+    uint32_t  DTERate;
+    uint8_t   CharFormat;
+    uint8_t   ParityType;
+    uint8_t   Databits;
 }CDC_Line_Coding;
 
 
 /* Extern variables */
-extern uint8 CDC_OUT_Data[];       
-//extern uint8 u8RecDataFlag;        
+extern uint8_t CDC_OUT_Data[];       
+//extern uint8_t u8RecDataFlag;        
 extern CDC_Line_Coding LineCoding; 
 
 
 /* Prototypes */
 void CDC_Init(void);
 void CDC_Engine(void);
-uint8 CDC_InterfaceReq_Handler(void);
-uint32 LWordSwap(uint32);
-uint8 CDC_Settings_Update(uint8*,uint8);
+uint8_t CDC_InterfaceReq_Handler(void);
+uint32_t LWordSwap(uint32_t);
+uint8_t CDC_Settings_Update(uint8_t*,uint8_t);
 
 
 #endif /* __CDC__*/

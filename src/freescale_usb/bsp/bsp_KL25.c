@@ -29,7 +29,7 @@ void vfnInitUSBClock (uint8_t u8ClkOption)
 
     case CLKIN:
     {
-      SIM_SOPT2 &= (uint32)(~SIM_SOPT2_USBSRC_MASK);    /** PTA5 selected as USBFS CLK source */
+      SIM_SOPT2 &= (uint32_t)(~SIM_SOPT2_USBSRC_MASK);    /** PTA5 selected as USBFS CLK source */
       FLAG_SET(SIM_SCGC5_PORTA_SHIFT,SIM_SCGC5);
       PORTA_PCR5=(0|PORT_PCR_MUX(2));                   /** Enable PTA5 as CLK input */
     }

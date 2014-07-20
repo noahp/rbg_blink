@@ -7,7 +7,7 @@
 /********************************************************************
 *       Device Descriptor
 ********************************************************************/
-const uint8 Device_Descriptor[18]= 
+const uint8_t Device_Descriptor[18]= 
 {
 /*
 	0x12,		      //blength
@@ -46,7 +46,7 @@ const uint8 Device_Descriptor[18]=
 /********************************************************************
 *       String 0
 ********************************************************************/
-const uint8 String_Descriptor0[4] = 
+const uint8_t String_Descriptor0[4] = 
 {
 	0x04,		   //bLength;
 	0x03,		   //bDescriptorType - STRING descriptor
@@ -56,7 +56,7 @@ const uint8 String_Descriptor0[4] =
 /********************************************************************
 *       String 1
 ********************************************************************/
-const uint8 String_Descriptor1[] = 
+const uint8_t String_Descriptor1[] = 
 {
 	0x14,			//bLength; 11 bytes
 	0x03,		    //bDescriptorType - STRING descriptor
@@ -75,7 +75,7 @@ const uint8 String_Descriptor1[] =
 /********************************************************************
 *       String 2
 ********************************************************************/
-const uint8 String_Descriptor2[] = 
+const uint8_t String_Descriptor2[] = 
 {
 	0x12,			//bLength;
 	0x03,		    //bDescriptorType - STRING descriptor
@@ -91,7 +91,7 @@ const uint8 String_Descriptor2[] =
 /********************************************************************
 *       String 23
 ********************************************************************/
-const uint8 String_Descriptor3[] = 
+const uint8_t String_Descriptor3[] = 
 {
 	0x12,		//bLength;
 	0x03,		//bDescriptorType - STRING descriptor
@@ -112,7 +112,7 @@ const uint8 String_Descriptor3[] =
 /********************************************************************
 *       Configuration Descriptor
 ********************************************************************/
-const uint8 Configuration_Descriptor[0x43]= 
+const uint8_t Configuration_Descriptor[0x43]= 
 {
 	
 	0x09,		    //blength
@@ -210,7 +210,7 @@ const uint8 Configuration_Descriptor[0x43]=
 /********************************************************************
 *       Device Qualifier Descriptor
 ********************************************************************/
-const uint8 Device_Qualifier[10]=
+const uint8_t Device_Qualifier[10]=
 {
     0x0A,
     0x06,
