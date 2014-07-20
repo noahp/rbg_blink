@@ -33,10 +33,6 @@
 		<Unit filename="Makefile" />
 		<Unit filename="link.ld" />
 		<Unit filename="src/MKL26Z4.h" />
-		<Unit filename="src/delay.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/delay.h" />
 		<Unit filename="src/interrupts.c">
 			<Option compilerVar="CC" />
 		</Unit>
