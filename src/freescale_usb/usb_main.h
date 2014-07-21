@@ -4,5 +4,7 @@
  *
  */
 
+#include <stdint.h>
+
 void usb_main_init (void);
-void usb_main_mainfunction(void);
+int usb_main_mainfunction(uint8_t *pChar);

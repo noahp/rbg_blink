@@ -40,8 +40,10 @@ void usb_main_init (void)
     CDC_Init();
 }
 
-void usb_main_mainfunction(void)
+int usb_main_mainfunction(uint8_t *pChar)
 {
+    int retval = -1;
+
     // USB CDC service routine
     CDC_Engine();
 
@@ -55,6 +57,10 @@ void usb_main_mainfunction(void)
 
         // Send it back to the PC
         EP_IN_Transfer(EP2,CDC_OUTPointer,1);
+
+        // save the value for the calling application
+        *pChar = CDC_OUTPointer[0];
+        retval = 1;
     }
 
     #ifdef TOWER
@@ -66,6 +72,8 @@ void usb_main_mainfunction(void)
         FLAG_SET(VBUS_HIGH_EVENT,gu8ISR_Flags);
     }
     #endif
+
+    return retval;
 }
 
 /*******************************************************************/
