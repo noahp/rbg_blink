@@ -42,13 +42,13 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/arm_cm0.h" />
-		<Unit filename="src/freescale_usb/Settings.h" />
 		<Unit filename="src/freescale_usb/bsp/bsp_KL25.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/freescale_usb/bsp/bsp_KL25.h" />
 		<Unit filename="src/freescale_usb/freedom.h" />
 		<Unit filename="src/freescale_usb/isr.h" />
+		<Unit filename="src/freescale_usb/settings.h" />
 		<Unit filename="src/freescale_usb/tower.h" />
 		<Unit filename="src/freescale_usb/usb/ring_buffer.c">
 			<Option compilerVar="CC" />
