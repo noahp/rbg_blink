@@ -64,10 +64,9 @@ void CDC_Engine(void)
     {
         case WAITING_FOR_ENUMERATION:
             /* Wait for USB Enumeration */
-            while(gu8USB_State!=uENUMERATED)
-            {
-                (void)u8CDCState;
-            };
+            if(gu8USB_State!=uENUMERATED){
+                break;
+            }
 
             if (enum_msg)
             {

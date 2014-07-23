@@ -190,7 +190,7 @@ void USB_Init(void)
      // MPU_CESR=0;                                    MPU is disable. All accesses from all bus masters are allowed
 
     /** Feed 48MHz to the USB FS clock */
-    vfnInitUSBClock(USB_CLOCK);
+    vfnInitUSBClock();
 
     /* NVIC Configuration */
     enable_irq(INT_USB0 - 16);
@@ -623,10 +623,10 @@ void USB_Reset_Handler(void)
     USB0_ERREN=0xFF;
 
     // USB Interrupt Enablers
-    FLAG_SET(USB_INTEN_TOKDNEEN_SHIFT,USB0_INTEN);
-    FLAG_SET(USB_INTEN_SOFTOKEN_SHIFT,USB0_INTEN);
-    FLAG_SET(USB_INTEN_ERROREN_SHIFT,USB0_INTEN);
-    FLAG_SET(USB_INTEN_USBRSTEN_SHIFT,USB0_INTEN);
+    USB0_INTEN |= (1U << USB_INTEN_TOKDNEEN_SHIFT) |
+                  (1U << USB_INTEN_SOFTOKEN_SHIFT) |
+                  (1U << USB_INTEN_ERROREN_SHIFT) |
+                  (1U << USB_INTEN_USBRSTEN_SHIFT);
 }
 
 

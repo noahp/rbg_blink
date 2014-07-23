@@ -22,6 +22,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-mthumb" />
+			<Add option="-Os" />
 			<Add option="-Wall" />
 			<Add option="-mcpu=cortex-m0plus" />
 			<Add option="-fdata-sections" />
