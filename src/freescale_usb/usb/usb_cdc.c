@@ -1,5 +1,5 @@
 #include "usb_cdc.h"
-#include "Settings.h"
+#include "settings.h"
 
 /* CDC Global Structures */
 CDC_Line_Coding LineCoding;

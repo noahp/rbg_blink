@@ -8,7 +8,7 @@
 #include "usb_main.h"
 #include "usb_cdc.h"
 #include "usb_reg.h"
-#include "Settings.h"
+#include "settings.h"
 
 volatile uint8_t  gu8ISR_Flags=0;
 

@@ -1,7 +1,7 @@
-#include"usb.h"
+#include "usb.h"
 #include "bsp_KL25.h"
 #include "usb_descriptor.h"
-#include "Settings.h"
+#include "settings.h"
 
 /* Arrays and global buffers */
 

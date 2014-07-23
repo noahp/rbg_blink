@@ -1,5 +1,5 @@
 
-#include "Settings.h"
+#include "settings.h"
 #include <stdint.h>
 #include "MKL26Z4.h"
 

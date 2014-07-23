@@ -25,9 +25,12 @@ extern volatile uint8_t  gu8ISR_Flags;
 /* Defines */
 #define CDC_BUFFER_SIZE 128
 #define EP_OUT          3
-#define EP_IN           2   
+#define EP_IN           2
 
-
+// A few useful register macros
+#define FLAG_SET(BitNumber, Register)        (Register |=(1U<<BitNumber))
+#define FLAG_CLR(BitNumber, Register)        (Register &=~(1U<<BitNumber))
+#define FLAG_CHK(BitNumber, Register)        (Register & (1U<<BitNumber))
 
 /* USB_CDC Definitions */
 #define WAITING_FOR_ENUMERATION 0x00
@@ -51,9 +54,9 @@ typedef struct
 
 
 /* Extern variables */
-extern uint8_t CDC_OUT_Data[];       
-//extern uint8_t u8RecDataFlag;        
-extern CDC_Line_Coding LineCoding; 
+extern uint8_t CDC_OUT_Data[];
+//extern uint8_t u8RecDataFlag;
+extern CDC_Line_Coding LineCoding;
 
 
 /* Prototypes */
