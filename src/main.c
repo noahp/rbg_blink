@@ -215,6 +215,7 @@ int main(void)
     main_init_io();
     main_init_spi();
 
+    // init buffer for spi packed data- fixed low pulse of 160 byte-times
     memset(rawData, 0, sizeof(rawData));
 
     // usb init
