@@ -23,7 +23,7 @@ static void main_init_io(void)
     GPIOB_PDDR |= (1 << 0);
 }
 
-static void main_spi_send(uint8_t *pData, uint32_t len)
+static void main_spi_send(uint8_t *pTxData, uint8_t *pRxData, uint32_t len)
 {
     // wait until dma busy flag is cleared
     while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
@@ -34,7 +34,7 @@ static void main_spi_send(uint8_t *pData, uint32_t len)
     // reset dma
     DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     // write to the dma
-    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pData;
+    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pTxData;
     DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
     // enable dma on the spi
     DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
