@@ -6,15 +6,14 @@
 //
 #include <stdint.h>
 
-// set user spi tx function. pTxData should be clocked out, and pRxData should
-// be clocked in.
-void Nrf24l01_setSpiTx(void (*pUserSpiTx)(void *pTxData, void *pRxData, int len));
+// ->set user spi tx function. pTxData should be clocked out, and pRxData should
+// be clocked in. pRxData may be set to null.
+// ->set function to toggle CE pin- if setIt, CE should go active high, else low
+void Nrf24l01_setCallbacks(void (*pUserSpiTx)(void *pTxData, void *pRxData, uint32_t len),
+                           void (*pUserSetCE)(int setIt));
 
-// initialize internal state.
+// initialize internal state, connect and initialize the module
 void Nrf24l01_init(void);
-
-// connect to the module
-void Nrf24l01_connect(void);
 
 // send a payload to the module for tranmission.
 int Nrf24l01_transmit(void *pData, int len);
