@@ -12,8 +12,9 @@
 void Nrf24l01_setCallbacks(void (*pUserSpiTx)(void *pTxData, void *pRxData, uint32_t len),
                            void (*pUserSetCE)(int setIt));
 
-// initialize internal state, connect and initialize the module
-void Nrf24l01_init(void);
+// initialize internal state, connect and initialize the module. pAddress is the
+// 5-byte address for this module.
+int Nrf24l01_init(uint8_t *pAddress);
 
 // send a payload to the module for tranmission.
 int Nrf24l01_transmit(void *pData, int len);

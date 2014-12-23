@@ -77,7 +77,8 @@ static void main_init_spi(void)
 
     // select clock divider- SPPR = 0b010 (/3), SPR = 0b0010 (/8).
     // target baud rate is 2MHz
-    SPI0_BR = SPI_BR_SPPR(0x2) | SPI_BR_SPR(0x1);
+//    SPI0_BR = SPI_BR_SPPR(0x2) | SPI_BR_SPR(0x1);
+    SPI0_BR = SPI_BR_SPPR(0x7) | SPI_BR_SPR(0x1);
 
     // turn on spi
     SPI0_C1 |= SPI_C1_SPE_MASK;
@@ -134,8 +135,8 @@ static void main_spi_send(void *pTxData, void *pRxData, uint32_t len)
     DMA_BASE_PTR->DMA[1].DCR |= DMA_DCR_ERQ_MASK;
     SPI0_C2 |= SPI_C2_TXDMAE_MASK | ((pRxData != NULL)?(SPI_C2_RXDMAE_MASK):(0));
     // wait for operations to complete (blocking)
-    while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
-    while(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
+    while(!(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_DONE_MASK));
+    while(!(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_DONE_MASK));
 }
 
 static void main_ce_set(int setIt)
@@ -163,6 +164,7 @@ static void main_led(void)
 int main(void)
 {
     uint8_t cdcChar;
+    uint8_t address[] = {0x12, 0x34, 0x56, 0x78, 0x90};
 
     // initialize the necessary
     main_init_io();
@@ -170,7 +172,7 @@ int main(void)
 
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
-    Nrf24l01_init();
+    Nrf24l01_init(address);
 
     // usb init
     usb_main_init();
