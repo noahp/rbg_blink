@@ -40,6 +40,8 @@ static void main_init_io(void)
     GPIOD_PSOR = (1 << 5);
     // set D5 DDR to output
     GPIOD_PDDR |= (1 << 5);
+    uint32_t msTime = systick_getMs();
+    while(systick_getMs() - msTime < 5);
 }
 
 static void main_init_spi(void)
@@ -61,8 +63,15 @@ static void main_init_spi(void)
     // enable SPI0 module
     SIM_SCGC4 |= SIM_SCGC4_SPI0_MASK;
 
-    // configure as master, cs output driven automatically, CPOL=1
-    SPI0_C1 |= (SPI_C1_MSTR_MASK | SPI_C1_SSOE_MASK | SPI_C1_CPOL_MASK);
+    // configure as master, cs output driven automatically, CPOL=0
+    SPI0_C1 = //SPI_C1_LSBFE_MASK
+              SPI_C1_SSOE_MASK |
+              //SPI_C1_CPHA_MASK
+              //SPI_C1_CPOL_MASK
+              SPI_C1_MSTR_MASK;
+              //SPI_C1_SPTIE_MASK
+              //SPI_C1_SPE_MASK
+              //SPI_C1_SPIE_MASK
     SPI0_C2 |= SPI_C2_MODFEN_MASK;
 
     // select clock divider- SPPR = 0b010 (/3), SPR = 0b0010 (/8).
@@ -88,7 +97,7 @@ static void main_init_spi(void)
     // dma
     // set destination address register to the SPI rx register
     DMA_BASE_PTR->DMA[0].DAR = (uint32_t)&SPI0_DL;
-    // configure DMA_0 for spi tx
+    // configure DMA_0 for spi rx
     DMA_BASE_PTR->DMA[0].DCR = DMA_DCR_ERQ_MASK |       // enable periph. request
                                DMA_DCR_CS_MASK |
                                DMA_DCR_SINC_MASK |
@@ -97,7 +106,7 @@ static void main_init_spi(void)
                                DMA_DCR_D_REQ_MASK;
     // set destination address register to the SPI tx register
     DMA_BASE_PTR->DMA[1].DAR = (uint32_t)&SPI0_DL;
-    // configure DMA_0 for spi tx
+    // configure DMA_1 for spi tx
     DMA_BASE_PTR->DMA[1].DCR = DMA_DCR_ERQ_MASK |       // enable periph. request
                                DMA_DCR_CS_MASK |
                                DMA_DCR_SINC_MASK |
@@ -110,19 +119,19 @@ static void main_spi_send(uint8_t *pTxData, uint8_t *pRxData, uint32_t len)
 {
     // wait until dma busy flag is cleared
     while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
-    //// pull spi mosi low (p27) for at least 50us
-    //PORTC_PCR6 = PORT_PCR_MUX(1);
-    //GPIOC_PCOR = (1 << 6);
-    //delay_ms(1);
+    while(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
     // reset dma
     DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
+    DMA_BASE_PTR->DMA[1].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     // write to the dma
-    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pTxData;
+    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pRxData;
     DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
+    DMA_BASE_PTR->DMA[1].SAR = (uint32_t)pTxData;
+    DMA_BASE_PTR->DMA[1].DSR_BCR = len & 0x00ffffff;
     // enable dma on the spi
     DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
-    //PORTC_PCR6 = PORT_PCR_MUX(2);
-    SPI0_C2 |= SPI_C2_TXDMAE_MASK;
+    DMA_BASE_PTR->DMA[1].DCR |= DMA_DCR_ERQ_MASK;
+    SPI0_C2 |= SPI_C2_TXDMAE_MASK | SPI_C2_RXDMAE_MASK;
 }
 
 static void main_led(void)
@@ -140,13 +149,19 @@ static void main_led(void)
 int main(void)
 {
     uint8_t cdcChar;
+    uint8_t dataBuf[] = {0x07};
+    uint8_t result = 0;
 
     // initialize the necessary
     main_init_io();
     main_init_spi();
 
+    // test
+    main_spi_send(dataBuf, &result, 1);
+
     // usb init
     usb_main_init();
+
 
     while(1){
         // led task
