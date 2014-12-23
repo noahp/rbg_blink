@@ -53,32 +53,34 @@ static void main_init_spi(void)
 
     // configure io pins for spi- alt 2
     // PTC4-5-6-7
-    PORTC_PCR4 = PORT_PCR_MUX(2);
+    PORTC_PCR4 = PORT_PCR_MUX(1);   // gpio
     PORTC_PCR5 = PORT_PCR_MUX(2);
     PORTC_PCR6 = PORT_PCR_MUX(2);
     PORTC_PCR7 = PORT_PCR_MUX(2);
 
-    // set pc6 to output-
-    GPIOC_PDDR |= (1 << 6);
+    // set pc4 to high, disable
+    GPIOC_PSOR = (1 << 4);
+    // set pc4 to output-
+    GPIOC_PDDR |= (1 << 4);
 
     // enable SPI0 module
     SIM_SCGC4 |= SIM_SCGC4_SPI0_MASK;
 
-    // configure as master, cs output driven automatically, CPOL=0
+    // configure as master, cs output driven manually, CPOL=0
     SPI0_C1 = //SPI_C1_LSBFE_MASK
-              SPI_C1_SSOE_MASK |
+              //SPI_C1_SSOE_MASK
               //SPI_C1_CPHA_MASK
               //SPI_C1_CPOL_MASK
               SPI_C1_MSTR_MASK;
               //SPI_C1_SPTIE_MASK
               //SPI_C1_SPE_MASK
               //SPI_C1_SPIE_MASK
-    SPI0_C2 |= SPI_C2_MODFEN_MASK;
+    SPI0_C2 = 0;
 
     // select clock divider- SPPR = 0b010 (/3), SPR = 0b0010 (/8).
     // target baud rate is 2MHz
 //    SPI0_BR = SPI_BR_SPPR(0x2) | SPI_BR_SPR(0x1);
-    SPI0_BR = SPI_BR_SPPR(0x7) | SPI_BR_SPR(0x1);
+    SPI0_BR = SPI_BR_SPPR(0x7) | SPI_BR_SPR(0x2);
 
     // turn on spi
     SPI0_C1 |= SPI_C1_SPE_MASK;
@@ -122,6 +124,10 @@ static void main_spi_send(void *pTxData, void *pRxData, uint32_t len)
     // wait until dma busy flag is cleared
     while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
     while(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
+
+    // cs low
+    GPIOC_PCOR = (1 << 4);
+
     // reset dma
     DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     DMA_BASE_PTR->DMA[1].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
@@ -137,6 +143,9 @@ static void main_spi_send(void *pTxData, void *pRxData, uint32_t len)
     // wait for operations to complete (blocking)
     while(!(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_DONE_MASK));
     while(!(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_DONE_MASK));
+
+    // cs high
+    GPIOC_PSOR = (1 << 4);
 }
 
 static void main_ce_set(int setIt)
@@ -175,20 +184,19 @@ int main(void)
     Nrf24l01_init(address);
 
     // usb init
-    usb_main_init();
-
+//    usb_main_init();
 
     while(1){
         // led task
         main_led();
 
-        // usb task
-        if(usb_main_mainfunction(&cdcChar) != -1){
-            switch(cdcChar){
-                default:
-                    break;
-            }
-        }
+//        // usb task
+//        if(usb_main_mainfunction(&cdcChar) != -1){
+//            switch(cdcChar){
+//                default:
+//                    break;
+//            }
+//        }
     }
 
     return 0;

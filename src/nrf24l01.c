@@ -25,7 +25,7 @@ static void delay_ms(uint32_t delay)
 
 static uint8_t getStatus(void)
 {
-    nrf24.txBuf[0] = 0x07;
+    nrf24.txBuf[0] = 0xFF;  // NOP
     nrf24.rxBuf[0] = 0;
 
     nrf24.pUserSpiTx(nrf24.txBuf, nrf24.rxBuf, 1);
@@ -60,6 +60,8 @@ void Nrf24l01_setCallbacks(void (*pUserSpiTx)(void *pTxData, void *pRxData, uint
 
 int Nrf24l01_init(uint8_t *pAddress)
 {
+    uint8_t temp8;
+
     // 100ms delay per datasheet
     delay_ms(100);
 
@@ -68,24 +70,24 @@ int Nrf24l01_init(uint8_t *pAddress)
         return -1;
     }
 
-    // enable address P1
     // set address
     writeReg(0x0B, pAddress, 5);    // RX_ADDR_P1
 
     // confirm address
     readReg(0x0B, 0, 5);    // RX_ADDR_P1
-    if(memcmp(nrf24.rxBuf, pAddress, 5) != 0){
+    if(memcmp(&nrf24.rxBuf[1], pAddress, 5) != 0){
         return -2;
     }
 
-    // power up
-    nrf24.txBuf[0] = 0x20 | 0x00;  // write | config register
-    nrf24.txBuf[1] = 0x02;  // PWR_UP bit
-
-    nrf24.pUserSpiTx(nrf24.txBuf, 0, 2);
+    // power up, set config bit
+    temp8 = 0x02;   // PWR_UP bit
+    writeReg(0x00, &temp8, 1);
 
     // 1.5ms delay per datasheet
     delay_ms(2);
+
+    // read CONFIG
+    readReg(0x00, &temp8, 1);
 
     // ready to roll
     return 0;
