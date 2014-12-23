@@ -21,25 +21,25 @@ static void main_init_io(void)
 
     // set B0 DDR to output
     GPIOB_PDDR |= (1 << 0);
-}
 
-static void main_spi_send(uint8_t *pTxData, uint8_t *pRxData, uint32_t len)
-{
-    // wait until dma busy flag is cleared
-    while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
-    //// pull spi mosi low (p27) for at least 50us
-    //PORTC_PCR6 = PORT_PCR_MUX(1);
-    //GPIOC_PCOR = (1 << 6);
-    //delay_ms(1);
-    // reset dma
-    DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
-    // write to the dma
-    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pTxData;
-    DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
-    // enable dma on the spi
-    DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
-    //PORTC_PCR6 = PORT_PCR_MUX(2);
-    SPI0_C2 |= SPI_C2_TXDMAE_MASK;
+/*
+    nrf24l01 pinout
+    25  -   CS
+    26  -   SCK
+    27  -   MOSI
+    28  -   MISO
+    29  -   IRQ
+    30  -   CE
+*/
+    // set CE to output
+    // enable clocks for PORTD
+    SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;
+    // set D5 to GPIO
+    PORTD_PCR5 = PORT_PCR_MUX(1);
+    // set output D5 high, enable
+    GPIOD_PSOR = (1 << 5);
+    // set D5 DDR to output
+    GPIOD_PDDR |= (1 << 5);
 }
 
 static void main_init_spi(void)
@@ -49,10 +49,11 @@ static void main_init_spi(void)
     SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
 
     // configure io pins for spi- alt 2
-    // PTC4-5-6
+    // PTC4-5-6-7
     PORTC_PCR4 = PORT_PCR_MUX(2);
     PORTC_PCR5 = PORT_PCR_MUX(2);
     PORTC_PCR6 = PORT_PCR_MUX(2);
+    PORTC_PCR7 = PORT_PCR_MUX(2);
 
     // set pc6 to output-
     GPIOC_PDDR |= (1 << 6);
@@ -77,11 +78,15 @@ static void main_init_spi(void)
     // dma mux
     // disable dmamux0 & clear channel select
     DMAMUX0_BASE_PTR->CHCFG[0] &= ~(DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE_MASK);
+    // select channel 16 for spi rx & enable it
+    DMAMUX0_BASE_PTR->CHCFG[0] |= DMAMUX_CHCFG_SOURCE(16) | DMAMUX_CHCFG_ENBL_MASK;
+    // disable dmamux1 & clear channel select
+    DMAMUX0_BASE_PTR->CHCFG[1] &= ~(DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE_MASK);
     // select channel 17 for spi tx & enable it
-    DMAMUX0_BASE_PTR->CHCFG[0] |= DMAMUX_CHCFG_SOURCE(17) | DMAMUX_CHCFG_ENBL_MASK;
+    DMAMUX0_BASE_PTR->CHCFG[1] |= DMAMUX_CHCFG_SOURCE(17) | DMAMUX_CHCFG_ENBL_MASK;
 
     // dma
-    // set destination address register to the SPI tx register
+    // set destination address register to the SPI rx register
     DMA_BASE_PTR->DMA[0].DAR = (uint32_t)&SPI0_DL;
     // configure DMA_0 for spi tx
     DMA_BASE_PTR->DMA[0].DCR = DMA_DCR_ERQ_MASK |       // enable periph. request
@@ -90,7 +95,34 @@ static void main_init_spi(void)
                                DMA_DCR_SSIZE(0x01) |
                                DMA_DCR_DSIZE(0x01) |
                                DMA_DCR_D_REQ_MASK;
+    // set destination address register to the SPI tx register
+    DMA_BASE_PTR->DMA[1].DAR = (uint32_t)&SPI0_DL;
+    // configure DMA_0 for spi tx
+    DMA_BASE_PTR->DMA[1].DCR = DMA_DCR_ERQ_MASK |       // enable periph. request
+                               DMA_DCR_CS_MASK |
+                               DMA_DCR_SINC_MASK |
+                               DMA_DCR_SSIZE(0x01) |
+                               DMA_DCR_DSIZE(0x01) |
+                               DMA_DCR_D_REQ_MASK;
+}
 
+static void main_spi_send(uint8_t *pTxData, uint8_t *pRxData, uint32_t len)
+{
+    // wait until dma busy flag is cleared
+    while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
+    //// pull spi mosi low (p27) for at least 50us
+    //PORTC_PCR6 = PORT_PCR_MUX(1);
+    //GPIOC_PCOR = (1 << 6);
+    //delay_ms(1);
+    // reset dma
+    DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
+    // write to the dma
+    DMA_BASE_PTR->DMA[0].SAR = (uint32_t)pTxData;
+    DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
+    // enable dma on the spi
+    DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
+    //PORTC_PCR6 = PORT_PCR_MUX(2);
+    SPI0_C2 |= SPI_C2_TXDMAE_MASK;
 }
 
 static void main_led(void)
