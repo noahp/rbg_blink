@@ -125,19 +125,14 @@ static void main_spi_send(void *pTxData, void *pRxData, uint32_t len)
     DMA_BASE_PTR->DMA[0].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     DMA_BASE_PTR->DMA[1].DSR_BCR = DMA_DSR_BCR_DONE_MASK;
     // write to the dma
+    DMA_BASE_PTR->DMA[0].DAR = (uint32_t)pRxData;
+    DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
     DMA_BASE_PTR->DMA[1].SAR = (uint32_t)pTxData;
     DMA_BASE_PTR->DMA[1].DSR_BCR = len & 0x00ffffff;
     // enable dma on the spi
+    DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
     DMA_BASE_PTR->DMA[1].DCR |= DMA_DCR_ERQ_MASK;
-
-    // if rx buffer is non-null, use dma on it too.
-    if(pRxData != NULL){
-        DMA_BASE_PTR->DMA[0].DAR = (uint32_t)pRxData;
-        DMA_BASE_PTR->DMA[0].DSR_BCR = len & 0x00ffffff;
-        DMA_BASE_PTR->DMA[0].DCR |= DMA_DCR_ERQ_MASK;
-    }
-    SPI0_C2 |= SPI_C2_TXDMAE_MASK | (pRxData != NULL)?(SPI_C2_RXDMAE_MASK):(0);
-
+    SPI0_C2 |= SPI_C2_TXDMAE_MASK | ((pRxData != NULL)?(SPI_C2_RXDMAE_MASK):(0));
     // wait for operations to complete (blocking)
     while(DMA_BASE_PTR->DMA[0].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
     while(DMA_BASE_PTR->DMA[1].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
@@ -167,16 +162,11 @@ static void main_led(void)
 
 int main(void)
 {
-    uint8_t dataBuf[] = {0x07};
-    uint8_t result = 0;
-
     uint8_t cdcChar;
 
     // initialize the necessary
     main_init_io();
     main_init_spi();
-
-    main_spi_send(dataBuf, &result, 1);
 
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
