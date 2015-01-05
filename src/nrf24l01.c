@@ -100,30 +100,56 @@ int Nrf24l01_init(uint8_t *pAddress)
     return 0;
 }
 
-int Nrf24l01_transmit(void *pData, int len)
+int Nrf24l01_transmit(uint8_t *pData, int len, uint8_t *pAddress)
 {
+    uint8_t temp8;
+    uint32_t timeOut;
+
+    // assume PRIM_RX is cleared.
+
     // wait for tx fifo full flag to clear
     while(getStatus() & (0x01 << 5));   // bit 5, TX_FULL
+
+    // set TX address
+    writeReg(0x10, pAddress, 5);
+    // set RX_ADDR_P0 to match for auto-ack
+    writeReg(0x0A, pAddress, 5);
 
     // load packet into tx fifo
     if(len > 32){
         len = 32;
     }
+    writeReg(0xA0, pData, len); // W_TX_PAYLOAD command
 
     // set CE high
+    nrf24.pUserSetCE(1);
 
-    // wait 1 ms
+    // wait 10 us
+    delay_us(10);
 
     // set CE low
+    nrf24.pUserSetCE(0);
+
+    // wait for TX_DS, or 100 ms timeout
+    timeOut = systick_getMs();
+    while((!(getStatus() & (1 << 5))) &&
+          (systick_getMs() - timeOut < 100));
+    // clear TX_DS
+    temp8 = 1 << 5;
+    writeReg(0x07, &temp8, 1);
 
     return len;
 }
 
-void Nrf24l01_setReceiveMode(int active)
+void Nrf24l01_setReceiveMode(int active, uint8_t payloadWidth)
 {
     uint8_t temp8;
 
     if(active){
+        // set payload width
+        temp8 = payloadWidth;
+        writeReg(0x12, &temp8, 1);
+
         // set PRIM_RX
         readReg(0x00, &temp8, 1);   // read config
         temp8 |= 1;                 // set PRIM_RX bit
@@ -144,7 +170,26 @@ void Nrf24l01_setReceiveMode(int active)
     }
 }
 
-int Nrf24l01_receive(void *pData)
+int Nrf24l01_receive(uint8_t *pData)
 {
-    return 0;
+    uint8_t temp8;
+
+    // check rx fifo status
+    readReg(0x17, &temp8, 1);
+    if(temp8 & (1 << 0)){
+        // RX_EMPTY
+        return 0;
+    }
+
+    // read pipe the payload is in- retrieve status register by checking the
+    // first byte in the last rx
+    temp8 = (nrf24.rxBuf[0] >> 1) & 7;
+
+    // get payload width in top payload
+    readReg(0x60, &temp8, 1);
+
+    // read out the bytes
+    readReg(0x61, pData, temp8);     // R_RX_PAYLOAD command
+
+    return temp8;
 }

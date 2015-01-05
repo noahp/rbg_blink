@@ -170,6 +170,9 @@ static void main_led(void)
     }
 }
 
+#define MY_ADDRESS      "/x12/x34/x56/x78/x90"
+#define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
+
 int main(void)
 {
     uint8_t cdcChar;
@@ -180,7 +183,7 @@ int main(void)
 
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
-    Nrf24l01_init((uint8_t *)"/x12/x34/x56/x78/x90");   // set address
+    Nrf24l01_init((uint8_t *)MY_ADDRESS);   // set address
 
     // usb init
     usb_main_init();
@@ -191,10 +194,8 @@ int main(void)
 
         // usb task
         if(usb_main_mainfunction(&cdcChar) != -1){
-            switch(cdcChar){
-                default:
-                    break;
-            }
+            // send it
+            Nrf24l01_transmit(&cdcChar, 1, REMOTE_ADDRESS);
         }
     }
 

@@ -17,10 +17,10 @@ void Nrf24l01_setCallbacks(void (*pUserSpiTx)(void *pTxData, void *pRxData, uint
 int Nrf24l01_init(uint8_t *pAddress);
 
 // send a payload to the module for tranmission.
-int Nrf24l01_transmit(void *pData, int len);
+int Nrf24l01_transmit(uint8_t *pData, int len, uint8_t *pAddress);
 
 // set receive mode to active if non-zero, deactivate it otherwise
-void Nrf24l01_setReceiveMode(int active);
+void Nrf24l01_setReceiveMode(int active, uint8_t payloadWidth);
 
 // emit data if available, only one packet.
-int Nrf24l01_receive(void *pData);
+int Nrf24l01_receive(uint8_t *pData);
