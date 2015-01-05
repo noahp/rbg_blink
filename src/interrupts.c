@@ -92,8 +92,8 @@ void ResetHandler(void)
         *(pulDest++) = 0;
     }
 
-    // initialize systick interrupt at 1ms interval
-    SysTick_Config(48000);
+    // initialize systick interrupt at 100us interval
+    SysTick_Config(4800);
 
     // Call the application's entry point.
     main();
