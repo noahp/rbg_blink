@@ -55,8 +55,8 @@ int usb_main_mainfunction(uint8_t *pChar)
         usbSIE_CONTROL(EP_OUT);
         FLAG_CLR(EP_OUT,gu8USB_Flags);
 
-        // Send it back to the PC
-        EP_IN_Transfer(EP2,CDC_OUTPointer,1);
+//        // Send it back to the PC
+//        EP_IN_Transfer(EP2,CDC_OUTPointer,1);
 
         // save the value for the calling application
         *pChar = CDC_OUTPointer[0];

@@ -170,9 +170,10 @@ static void main_led(void)
     }
 }
 
+#include "usb.h"
+
 #define MY_ADDRESS      "/x12/x34/x56/x78/x90"
 #define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
-
 int main(void)
 {
     uint8_t cdcChar;
@@ -195,7 +196,10 @@ int main(void)
         // usb task
         if(usb_main_mainfunction(&cdcChar) != -1){
             // send it
-            Nrf24l01_transmit(&cdcChar, 1, REMOTE_ADDRESS);
+            if(Nrf24l01_transmit(&cdcChar, 1, (uint8_t *)REMOTE_ADDRESS)){
+                // Send it back to the PC
+                EP_IN_Transfer(EP2, &cdcChar, 1);
+            }
         }
     }
 

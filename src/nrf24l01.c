@@ -86,6 +86,10 @@ int Nrf24l01_init(uint8_t *pAddress)
         return -2;
     }
 
+    // set maximum number of retries, 15, 250uS auto retransmit delay
+    temp8 = 0x0F;
+    writeReg(0x04, &temp8, 1);
+
     // power up, set config bit
     temp8 = 0x02;   // PWR_UP bit
     writeReg(0x00, &temp8, 1);
@@ -130,13 +134,25 @@ int Nrf24l01_transmit(uint8_t *pData, int len, uint8_t *pAddress)
     // set CE low
     nrf24.pUserSetCE(0);
 
+    // 130 us settling time delay
+    delay_us(130);
+
     // wait for TX_DS, or 100 ms timeout
     timeOut = systick_getMs();
     while((!(getStatus() & (1 << 5))) &&
           (systick_getMs() - timeOut < 100));
-    // clear TX_DS
-    temp8 = 1 << 5;
+    // check for and mark failed tx
+    if(!(getStatus() & (1 << 5))){
+        len = 0;
+    }
+
+    // count retransmits
+    readReg(0x08, &temp8, 1);
+
+    // clear TX_DS and MAX_RT, flush TX fifo
+    temp8 = (1 << 5) | (1 << 4);
     writeReg(0x07, &temp8, 1);
+    writeReg(0xE1, &temp8, 0);  // FLUSH_TX command
 
     return len;
 }
