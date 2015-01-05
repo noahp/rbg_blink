@@ -184,19 +184,19 @@ int main(void)
     Nrf24l01_init(address);
 
     // usb init
-//    usb_main_init();
+    usb_main_init();
 
     while(1){
         // led task
         main_led();
 
-//        // usb task
-//        if(usb_main_mainfunction(&cdcChar) != -1){
-//            switch(cdcChar){
-//                default:
-//                    break;
-//            }
-//        }
+        // usb task
+        if(usb_main_mainfunction(&cdcChar) != -1){
+            switch(cdcChar){
+                default:
+                    break;
+            }
+        }
     }
 
     return 0;
