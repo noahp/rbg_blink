@@ -23,6 +23,13 @@ static void delay_ms(uint32_t delay)
     while(systick_getMs() - now < delay);
 }
 
+static void delay_us(uint32_t delay)
+{
+    uint32_t now = systick_getUs();
+
+    while(systick_getUs() - now < delay);
+}
+
 static uint8_t getStatus(void)
 {
     nrf24.txBuf[0] = 0xFF;  // NOP
@@ -96,13 +103,12 @@ int Nrf24l01_init(uint8_t *pAddress)
 int Nrf24l01_transmit(void *pData, int len)
 {
     // wait for tx fifo full flag to clear
-    while(!(getStatus() & 0x01));
+    while(getStatus() & (0x01 << 5));   // bit 5, TX_FULL
 
     // load packet into tx fifo
     if(len > 32){
         len = 32;
     }
-
 
     // set CE high
 
@@ -111,6 +117,31 @@ int Nrf24l01_transmit(void *pData, int len)
     // set CE low
 
     return len;
+}
+
+void Nrf24l01_setReceiveMode(int active)
+{
+    uint8_t temp8;
+
+    if(active){
+        // set PRIM_RX
+        readReg(0x00, &temp8, 1);   // read config
+        temp8 |= 1;                 // set PRIM_RX bit
+        writeReg(0x00, &temp8, 1);
+
+        // set CE high
+        nrf24.pUserSetCE(1);
+
+        // wait 130us
+        delay_us(130);
+    }
+    else{
+        // set CE low, clear PRIM_RX
+        nrf24.pUserSetCE(0);
+        readReg(0x00, &temp8, 1);   // read config
+        temp8 &= ~1;                // clear PRIM_RX bit
+        writeReg(0x00, &temp8, 1);
+    }
 }
 
 int Nrf24l01_receive(void *pData)

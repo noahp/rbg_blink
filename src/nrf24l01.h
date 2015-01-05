@@ -19,5 +19,8 @@ int Nrf24l01_init(uint8_t *pAddress);
 // send a payload to the module for tranmission.
 int Nrf24l01_transmit(void *pData, int len);
 
+// set receive mode to active if non-zero, deactivate it otherwise
+void Nrf24l01_setReceiveMode(int active);
+
 // emit data if available, only one packet.
 int Nrf24l01_receive(void *pData);

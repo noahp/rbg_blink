@@ -173,7 +173,6 @@ static void main_led(void)
 int main(void)
 {
     uint8_t cdcChar;
-    uint8_t address[] = {0x12, 0x34, 0x56, 0x78, 0x90};
 
     // initialize the necessary
     main_init_io();
@@ -181,7 +180,7 @@ int main(void)
 
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
-    Nrf24l01_init(address);
+    Nrf24l01_init((uint8_t *)"/x12/x34/x56/x78/x90");   // set address
 
     // usb init
     usb_main_init();
