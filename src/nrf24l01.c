@@ -90,12 +90,17 @@ int Nrf24l01_init(uint8_t *pAddress)
     temp8 = 0x0F;
     writeReg(0x04, &temp8, 1);
 
+    // set payload width for P0 & P1
+    temp8 = 1;
+    writeReg(0x11, &temp8, 1);
+    writeReg(0x12, &temp8, 1);
+
     // power up, set config bit
     temp8 = 0x02;   // PWR_UP bit
     writeReg(0x00, &temp8, 1);
 
     // 1.5ms delay per datasheet
-    delay_ms(2);
+    delay_us(1750);
 
     // read CONFIG
     readReg(0x00, &temp8, 1);
@@ -157,15 +162,11 @@ int Nrf24l01_transmit(uint8_t *pData, int len, uint8_t *pAddress)
     return len;
 }
 
-void Nrf24l01_setReceiveMode(int active, uint8_t payloadWidth)
+void Nrf24l01_setReceiveMode(int active)
 {
     uint8_t temp8;
 
     if(active){
-        // set payload width
-        temp8 = payloadWidth;
-        writeReg(0x12, &temp8, 1);
-
         // set PRIM_RX
         readReg(0x00, &temp8, 1);   // read config
         temp8 |= 1;                 // set PRIM_RX bit

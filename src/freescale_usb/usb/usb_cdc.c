@@ -29,7 +29,7 @@ void CDC_Init(void)
     USB_Init();
 
     /** Enable SOF ouput */
-    PORTC_PCR7 |= PORT_PCR_MUX(3);
+    //PORTC_PCR7 |= PORT_PCR_MUX(3);
 
     /* Line Coding Initialization */
     //LineCoding.DTERate=LWordSwap(9600);

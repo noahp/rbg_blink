@@ -172,11 +172,12 @@ static void main_led(void)
 
 #include "usb.h"
 
-#define MY_ADDRESS      "/x12/x34/x56/x78/x90"
-#define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
+#define MY_ADDRESS      "/x12/x34/x56/x78/x91"
+#define REMOTE_ADDRESS  "/x12/x34/x56/x78/x90"
 int main(void)
 {
-    uint8_t cdcChar;
+    uint8_t cdcChar, rxChar;
+    uint32_t rxPollTime = 0;
 
     // initialize the necessary
     main_init_io();
@@ -185,6 +186,7 @@ int main(void)
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
     Nrf24l01_init((uint8_t *)MY_ADDRESS);   // set address
+    Nrf24l01_setReceiveMode(1);
 
     // usb init
     usb_main_init();
@@ -193,13 +195,20 @@ int main(void)
         // led task
         main_led();
 
+        if(systick_getMs() - rxPollTime > 50){
+            rxPollTime = systick_getMs();
+            if(Nrf24l01_receive(&rxChar)){
+                EP_IN_Transfer(EP2, &rxChar, 1);
+            }
+        }
+
         // usb task
         if(usb_main_mainfunction(&cdcChar) != -1){
-            // send it
-            if(Nrf24l01_transmit(&cdcChar, 1, (uint8_t *)REMOTE_ADDRESS)){
-                // Send it back to the PC
-                EP_IN_Transfer(EP2, &cdcChar, 1);
-            }
+//            // send it
+//            if(Nrf24l01_transmit(&cdcChar, 1, (uint8_t *)REMOTE_ADDRESS)){
+//                // Send it back to the PC
+//                EP_IN_Transfer(EP2, &cdcChar, 1);
+//            }
         }
     }
 
