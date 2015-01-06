@@ -172,8 +172,8 @@ static void main_led(void)
 
 #include "usb.h"
 
-#define MY_ADDRESS      "/x12/x34/x56/x78/x91"
-#define REMOTE_ADDRESS  "/x12/x34/x56/x78/x90"
+#define MY_ADDRESS      "/x12/x34/x56/x78/x90"
+#define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
 int main(void)
 {
     uint8_t cdcChar, rxChar;
@@ -195,7 +195,7 @@ int main(void)
         // led task
         main_led();
 
-        if(systick_getMs() - rxPollTime > 50){
+        if(systick_getMs() - rxPollTime > 5){
             rxPollTime = systick_getMs();
             if(Nrf24l01_receive(&rxChar)){
                 EP_IN_Transfer(EP2, &rxChar, 1);
@@ -204,11 +204,13 @@ int main(void)
 
         // usb task
         if(usb_main_mainfunction(&cdcChar) != -1){
-//            // send it
-//            if(Nrf24l01_transmit(&cdcChar, 1, (uint8_t *)REMOTE_ADDRESS)){
-//                // Send it back to the PC
-//                EP_IN_Transfer(EP2, &cdcChar, 1);
-//            }
+            // send it
+            Nrf24l01_setReceiveMode(0);
+            if(Nrf24l01_transmit(&cdcChar, 1, (uint8_t *)REMOTE_ADDRESS)){
+                // Send it back to the PC
+                //EP_IN_Transfer(EP2, &cdcChar, 1);
+            }
+            Nrf24l01_setReceiveMode(1);
         }
     }
 
