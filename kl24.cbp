@@ -32,7 +32,7 @@
 			<Add directory="./src" />
 		</Compiler>
 		<Linker>
-			<Add option="-mthumb -mcpu=cortex-m0plus --specs=nano.specs -Wl,--gc-sections,-Map,kl24.map,-Tlink.ld" />
+			<Add option="-mthumb -mcpu=cortex-m0plus --specs=rdimon.specs --specs=nano.specs -Wl,--gc-sections,-Map,kl24.map,-Tlink.ld" />
 		</Linker>
 		<Unit filename="Makefile" />
 		<Unit filename="link.ld" />
@@ -91,7 +91,7 @@
 			<envvars />
 			<debugger>
 				<remote_debugging>
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" additional_cmds="monitor reset 0&#x0A;load" />
+					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" additional_cmds="monitor reset 0&#x0A;load&#x0A;monitor semihosting enable" />
 				</remote_debugging>
 				<remote_debugging target="Debug">
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" additional_cmds="monitor reset 0&#x0A;load" />

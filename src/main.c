@@ -4,6 +4,10 @@
 #include <string.h> //memset
 #include "usb_main.h"
 #include "nrf24l01.h"
+#include <stdio.h>
+#include "usb.h"
+
+extern void  initialise_monitor_handles(void);
 
 static void main_init_io(void)
 {
@@ -161,16 +165,17 @@ static void main_ce_set(int setIt)
 static void main_led(void)
 {
     static uint32_t blinkTime = 0;
+    static uint32_t blinkCount = 0;
 
     // blink every 250ms
     if(systick_getMs() - blinkTime > 250){
         blinkTime = systick_getMs();
         // toggle
         GPIOB_PTOR = (1 << 0);
+
+        printf("says who!!!! %d\n", (int)blinkCount++);
     }
 }
-
-#include "usb.h"
 
 #define MY_ADDRESS      "/x12/x34/x56/x78/x90"
 #define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
@@ -178,6 +183,8 @@ int main(void)
 {
     uint8_t cdcChar, rxChar;
     uint32_t rxPollTime = 0;
+
+    initialise_monitor_handles();
 
     // initialize the necessary
     main_init_io();
