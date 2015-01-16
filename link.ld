@@ -3,10 +3,11 @@ SEARCH_DIR(.)
 
 MEMORY
 {
-  INTERRUPTS (rx)  : ORIGIN = 0x0,  LENGTH = 0xC0         /* 192 */
-  FLASHCONFIG(rx)  : ORIGIN = 0x400,  LENGTH = 16         /* 16 bytes */
-  TEXT       (rx)  : ORIGIN = 0x410, LENGTH = 0x1FBF0     /* 128K - 0x410 */
-  RAM        (rwx) : ORIGIN = 0x1FFFF000, LENGTH = 0x4000 /* 16K */
+  INTERRUPTS (rx)  : ORIGIN = 0x0,          LENGTH = 192        /* 192 */
+  FLASHCONFIG(rx)  : ORIGIN = 0x400,        LENGTH = 16         /* 16 bytes */
+  TEXT       (rx)  : ORIGIN = 0x410,        LENGTH = 32K - 0x410
+  RAM        (rwx) : ORIGIN = 0x1FFFFC00,   LENGTH = 1K
+  RAM2       (rwx) : ORIGIN = 0x20000000,   LENGTH = 3K
 }
 
 /* Section Definitions */
@@ -49,7 +50,7 @@ SECTIONS
         *(.data .data.*)
         . = ALIGN(4);
         _edata = . ;
-    } > RAM
+    } > RAM2
 
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :
@@ -59,14 +60,22 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         _ebss = . ;
-    } > RAM
+    } > RAM2
+
+    .heap (COPY):
+	{
+		__end__ = .;
+		end = __end__;
+		*(.heap*)
+		__HeapLimit = .;
+	} > RAM
 
     /* stack section */
     .co_stack (NOLOAD):
     {
         . = ALIGN(8);
         *(.co_stack .co_stack.*)
-    } > RAM
+    } > RAM2
 
     . = ALIGN(4);
     _end = . ;
