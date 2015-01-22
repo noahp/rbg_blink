@@ -35,6 +35,12 @@ static void main_init_io(void)
     28  -   MISO
     29  -   IRQ
     30  -   CE
+    
+    module pinout
+    | IRQ | SO  |
+    | MO  | SCK |
+    | CS  | CE  |
+    | V+  | GND | <- pin 1
 */
     // set CE to output
     // enable clocks for PORTD
