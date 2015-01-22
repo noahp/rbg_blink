@@ -165,7 +165,7 @@ static void main_ce_set(int setIt)
 static void main_led(void)
 {
     static uint32_t blinkTime = 0;
-    static uint32_t blinkCount = 0;
+    //static uint32_t blinkCount = 0;
 
     // blink every 250ms
     if(systick_getMs() - blinkTime > 250){
@@ -173,7 +173,7 @@ static void main_led(void)
         // toggle
         GPIOB_PTOR = (1 << 0);
 
-        printf("says who!!!! %d\n", (int)blinkCount++);
+        //printf("says who!!!! %d\n", (int)blinkCount++);
     }
 }
 
@@ -184,7 +184,7 @@ int main(void)
     uint8_t cdcChar, rxChar;
     uint32_t rxPollTime = 0;
 
-    initialise_monitor_handles();
+    //initialise_monitor_handles();
 
     // initialize the necessary
     main_init_io();
