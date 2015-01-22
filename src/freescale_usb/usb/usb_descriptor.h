@@ -102,7 +102,7 @@ const uint8_t String_Descriptor3[] =
 	'_',0x00,
 	'1',0x00,
 	'.',0x00,
-	'0',0x00
+	'1',0x00
 };
 
 
