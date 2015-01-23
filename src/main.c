@@ -35,7 +35,7 @@ static void main_init_io(void)
     28  -   MISO
     29  -   IRQ
     30  -   CE
-    
+
     module pinout
     | IRQ | SO  |
     | MO  | SCK |
@@ -171,25 +171,32 @@ static void main_ce_set(int setIt)
 static void main_led(void)
 {
     static uint32_t blinkTime = 0;
-    //static uint32_t blinkCount = 0;
 
     // blink every 250ms
     if(systick_getMs() - blinkTime > 250){
         blinkTime = systick_getMs();
         // toggle
         GPIOB_PTOR = (1 << 0);
-
-        //printf("says who!!!! %d\n", (int)blinkCount++);
     }
 }
+static void delay_ms(uint32_t delay)
+{
+    uint32_t now = systick_getMs();
+
+    while(systick_getMs() - now < delay);
+}
+
 
 #define MY_ADDRESS      "/x12/x34/x56/x78/x90"
 #define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
 int main(void)
 {
-    uint8_t cdcChar, rxChar;
+    uint8_t cdcChar, i;
+    uint8_t rxBuf[32];
     uint32_t rxPollTime = 0;
+    int rxBytes;
 
+    // enable printf if debugger is connected
     //initialise_monitor_handles();
 
     // initialize the necessary
@@ -210,8 +217,23 @@ int main(void)
 
         if(systick_getMs() - rxPollTime > 5){
             rxPollTime = systick_getMs();
-            if(Nrf24l01_receive(&rxChar)){
-                EP_IN_Transfer(EP2, &rxChar, 1);
+            rxBytes = Nrf24l01_receive(rxBuf);
+            if(rxBytes){
+                EP_IN_Transfer(EP2, rxBuf, rxBytes);
+
+                if(rxBuf[0] == 't'){
+                    // send temperature
+                    #define WORDUP "temperature\n\r"
+                    memcpy(rxBuf, WORDUP, sizeof(WORDUP) - 1);
+                    Nrf24l01_setReceiveMode(0);
+                    for(i=0; i<sizeof(WORDUP) - 1; i++){
+                        Nrf24l01_transmit(&rxBuf[i], 1, (uint8_t *)REMOTE_ADDRESS);
+    //                    for(i=0; i<sizeof(WORDUP); i++){
+    //                        Nrf24l01_transmit(rxBuf[i], 1, (uint8_t *)REMOTE_ADDRESS);
+    //                    }
+                    }
+                    Nrf24l01_setReceiveMode(1);
+                }
             }
         }
 
