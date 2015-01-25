@@ -6,4 +6,4 @@
 //
 #include <stdint.h>
 
-uint8_t si70xx_readHumidityTemperature(void);
+uint16_t si70xx_readHumidityTemperature(void);

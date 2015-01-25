@@ -249,12 +249,14 @@ static void main_service_radio(void)
     }
 }
 
+static uint16_t tempRh = 0;
 static void main_si70xx_task(void)
 {
     uint32_t rhPollTime = 0;
+
     if(systick_getMs() - rhPollTime > 500){
         rhPollTime = systick_getMs();
-
+        tempRh = si70xx_readHumidityTemperature();
     }
 }
 

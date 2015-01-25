@@ -78,6 +78,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/nrf24l01.h" />
+		<Unit filename="src/si70xx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/si70xx.h" />
 		<Unit filename="src/startup.c">
 			<Option compilerVar="CC" />
 		</Unit>
