@@ -129,6 +129,39 @@ static void main_init_spi(void)
                                DMA_DCR_D_REQ_MASK;
 }
 
+static void main_init_i2c(void)
+{
+    // set up i2c and power/gnd for si7021 module
+    // pins
+    // 17 - gnd, 18 - vcc, 20 - scl, 21 - sda
+    // enable clocks for port a & b, & i2c0
+    SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTB_MASK;
+    SIM_SCGC4 |= SIM_SCGC4_I2C0_MASK;
+
+    // set PTA18 & PTA19 to gpio, PTB0 & PTB1 to I2C0
+    PORTA_PCR18 = PORT_PCR_MUX(1);   // gpio
+    PORTA_PCR19 = PORT_PCR_MUX(1);   // gpio
+    PORTB_PCR0 = PORT_PCR_MUX(2);   // i2c0
+    PORTB_PCR1 = PORT_PCR_MUX(1);   // i2c0
+
+    // configure i2c0
+    // set mult to 4, icr to 27 for i2c baud rate = bus rate / (4 x 480) = 25kHz
+    I2C0_F = I2C_F_MULT(4) | I2C_F_ICR(27);
+    // enable i2c
+    I2C0_C1 = I2C_C1_IICEN_MASK;
+
+    // set pa18 & pa19 to low
+    GPIOC_PCOR = (1 << 18) | (1 << 19);
+    // set pa18 & pa19 to output
+    GPIOC_PDDR |= (1 << 18) | (1 << 19);
+    // set pa18 to high to power the module
+    GPIOC_PSOR = (1 << 18);
+
+    // startup delay
+    delay_ms(10);
+
+}
+
 static void main_spi_send(void *pTxData, void *pRxData, uint32_t len)
 {
     // wait until dma busy flag is cleared
@@ -197,7 +230,7 @@ int main(void)
     int rxBytes;
 
     // enable printf if debugger is connected
-    //initialise_monitor_handles();
+    initialise_monitor_handles();
 
     // initialize the necessary
     main_init_io();
