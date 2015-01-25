@@ -9,6 +9,13 @@
 
 extern void  initialise_monitor_handles(void);
 
+static void delay_ms(uint32_t delay)
+{
+    uint32_t now = systick_getMs();
+
+    while(systick_getMs() - now < delay);
+}
+
 static void main_init_io(void)
 {
     // init ports
@@ -212,22 +219,48 @@ static void main_led(void)
         GPIOB_PTOR = (1 << 0);
     }
 }
-static void delay_ms(uint32_t delay)
-{
-    uint32_t now = systick_getMs();
-
-    while(systick_getMs() - now < delay);
-}
-
 
 #define MY_ADDRESS      "/x12/x34/x56/x78/x90"
 #define REMOTE_ADDRESS  "/x12/x34/x56/x78/x91"
+static void main_service_radio(void)
+{
+    uint32_t rxPollTime = 0;
+    uint8_t rxBuf[32];
+    uint8_t i;
+    int rxBytes;
+
+    if(systick_getMs() - rxPollTime > 5){
+        rxPollTime = systick_getMs();
+        rxBytes = Nrf24l01_receive(rxBuf);
+        if(rxBytes){
+            //EP_IN_Transfer(EP2, rxBuf, rxBytes);
+
+            if(rxBuf[0] == 't'){
+                // send temperature
+                #define WORDUP "temperature\n\r"
+                memcpy(rxBuf, WORDUP, sizeof(WORDUP) - 1);
+                Nrf24l01_setReceiveMode(0);
+                for(i=0; i<sizeof(WORDUP) - 1; i++){
+                    Nrf24l01_transmit(&rxBuf[i], 1, (uint8_t *)REMOTE_ADDRESS);
+                }
+                Nrf24l01_setReceiveMode(1);
+            }
+        }
+    }
+}
+
+static void main_si70xx_task(void)
+{
+    uint32_t rhPollTime = 0;
+    if(systick_getMs() - rhPollTime > 500){
+        rhPollTime = systick_getMs();
+
+    }
+}
+
 int main(void)
 {
-    uint8_t cdcChar, i;
-    uint8_t rxBuf[32];
-    uint32_t rxPollTime = 0;
-    int rxBytes;
+    uint8_t cdcChar;
 
     // enable printf if debugger is connected
     initialise_monitor_handles();
@@ -235,6 +268,7 @@ int main(void)
     // initialize the necessary
     main_init_io();
     main_init_spi();
+    main_init_i2c();
 
     // initialize nrf component
     Nrf24l01_setCallbacks(main_spi_send, main_ce_set);
@@ -248,27 +282,11 @@ int main(void)
         // led task
         main_led();
 
-        if(systick_getMs() - rxPollTime > 5){
-            rxPollTime = systick_getMs();
-            rxBytes = Nrf24l01_receive(rxBuf);
-            if(rxBytes){
-                EP_IN_Transfer(EP2, rxBuf, rxBytes);
+        // radio task
+        main_service_radio();
 
-                if(rxBuf[0] == 't'){
-                    // send temperature
-                    #define WORDUP "temperature\n\r"
-                    memcpy(rxBuf, WORDUP, sizeof(WORDUP) - 1);
-                    Nrf24l01_setReceiveMode(0);
-                    for(i=0; i<sizeof(WORDUP) - 1; i++){
-                        Nrf24l01_transmit(&rxBuf[i], 1, (uint8_t *)REMOTE_ADDRESS);
-    //                    for(i=0; i<sizeof(WORDUP); i++){
-    //                        Nrf24l01_transmit(rxBuf[i], 1, (uint8_t *)REMOTE_ADDRESS);
-    //                    }
-                    }
-                    Nrf24l01_setReceiveMode(1);
-                }
-            }
-        }
+        // temp/humidity sensor task
+        main_si70xx_task();
 
         // usb task
         if(usb_main_mainfunction(&cdcChar) != -1){
